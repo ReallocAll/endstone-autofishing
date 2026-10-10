@@ -1,0 +1,44 @@
+[build-system]
+requires = ["hatchling>=1.26"]
+build-backend = "hatchling.build"
+
+[project]
+name = "endstone-autofishing"
+version = "0.4.0"
+description = "Event-driven low-overhead automatic fishing for Endstone"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "GPL-3.0-only"
+license-files = ["LICENSE"]
+authors = [{ name = "ReallocAll" }]
+keywords = ["endstone", "minecraft", "bedrock", "fishing"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+]
+
+[project.entry-points."endstone"]
+autofishing = "endstone_autofishing:AutoFishingPlugin"
+
+[dependency-groups]
+dev = ["pytest>=8", "ruff>=0.11", "hatchling>=1.26"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/endstone_autofishing"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+include = ["src/**/*.py", "tests/test_regressions.py"]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+python_files = ["test_regressions.py"]

@@ -1,0 +1,44 @@
+# Endstone AutoFishing v0.4.0
+# Target: Endstone 0.11.x + BDS 1.26.51.1 (protocol 2193)
+
+[general]
+# Maximum horizontal distance from the position of the manual cast that started the current fishing session.
+movement-tolerance = 0.45
+
+# Maximum vertical displacement before the current session is paused.
+vertical-movement-tolerance = 1.0
+
+# Delay after automatic reel before the next automatic cast. 20 ticks = 1 second.
+recast-delay-ticks = 12
+
+# Maximum distance used to associate a newly spawned fishing hook with a player.
+hook-association-radius = 12.0
+
+# Show short player-facing status popups.
+show-status = true
+
+# Retry an automatic cast if no hook appears within this many seconds.
+cast-retry-seconds = 4.0
+
+# A real rod use must create a new fishing hook within this window to start
+# an automatic session. This prevents a manual reel from being mistaken for a cast.
+manual-start-timeout-seconds = 2.0
+
+[protocol]
+# BDS 1.26.51.1 / protocol 2193 values. Built-in values take precedence on protocol 2193.
+player-auth-input-packet-id = 144
+inventory-transaction-packet-id = 30
+actor-event-packet-id = 27
+item-interact-flag = 34
+fish-hooktime-event-id = 13
+block-action-flag = 35
+item-stack-request-flag = 36
+predicted-vehicle-flag = 45
+
+[debug]
+# Off by default. Enable only when diagnosing protocol/calibration issues.
+protocol-log = false
+
+# Collect callback/session counters for /autofish stats. Disabled by default so
+# the counters themselves add no work to the packet hot path.
+performance-counters = false
