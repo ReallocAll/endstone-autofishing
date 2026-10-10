@@ -1,0 +1,88 @@
+name: Release
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'main' &&
+      github.event.workflow_run.head_repository.full_name == github.repository &&
+      github.event.workflow_run.head_commit.message == 'release: publish AutoFishing v0.4.0'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@v10.3.0
+        with:
+          enable-cache: false
+      - run: uv python install 3.12
+      - run: uv build
+      - name: Validate release artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f dist/endstone_autofishing-0.4.0-py3-none-any.whl
+          test -f dist/endstone_autofishing-0.4.0.tar.gz
+          python3 - <<'PY'
+          import tarfile
+          import zipfile
+
+          with zipfile.ZipFile("dist/endstone_autofishing-0.4.0-py3-none-any.whl") as z:
+              names = z.namelist()
+              assert "endstone_autofishing/plugin.py" in names
+              assert "endstone_autofishing/protocol.py" in names
+              assert any(n.endswith("/entry_points.txt") for n in names)
+              assert any(n.endswith("/licenses/LICENSE") for n in names)
+          with tarfile.open("dist/endstone_autofishing-0.4.0.tar.gz", "r:gz") as t:
+              names = t.getnames()
+              assert any(n.endswith("/src/endstone_autofishing/plugin.py") for n in names)
+              assert any(n.endswith("/LICENSE") for n in names)
+          print("Release artifacts verified")
+          PY
+      - name: Publish v0.4.0 release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+          if gh release view v0.4.0 >/dev/null 2>&1; then
+            echo "::error::Release v0.4.0 already exists"
+            exit 1
+          fi
+          cat > /tmp/autofishing-release-notes.md <<'EOF'
+          ## Highlights
+
+          - Persistent per-player opt-in: enable once, then manually cast anywhere to start a session.
+          - Automatic reel and recast on bites using Bedrock Dedicated Server item-use transactions.
+          - Moving or switching hotbar slots ends the session without changing the saved preference; cast again to restart.
+          - Event-driven fishing-hook tracking, fast packet callbacks, and no server-wide player/entity polling.
+          - Improved session lifecycle and multiplayer isolation, with quieter status messages.
+
+          ## Installation
+
+          Download the attached endstone_autofishing-0.4.0-py3-none-any.whl, place it in the server plugins directory, and restart Endstone.
+
+          Commands: /autofish on|off|status|reset|stats (alias /af).
+
+          ## Compatibility
+
+          - Python 3.11–3.15: plugin code, tests, and wheel building verified.
+          - Endstone API 0.11; an Endstone build matching your Python version is required.
+          - BDS 1.26.51.1 (protocol 2193) is the verified baseline. Other protocol versions are not independently verified.
+          - CPython 3.15 with a live Endstone/BDS runtime has not been validated by this CI.
+
+          The attached release artifacts include a pure-Python wheel and a source distribution. Nothing is published to PyPI.
+          EOF
+          gh release create v0.4.0 dist/endstone_autofishing-0.4.0-py3-none-any.whl dist/endstone_autofishing-0.4.0.tar.gz --repo "$GITHUB_REPOSITORY" --target "$SOURCE_SHA" --title "AutoFishing v0.4.0" --notes-file /tmp/autofishing-release-notes.md
