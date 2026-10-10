@@ -1,0 +1,68 @@
+name: CI
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.12", "3.14"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: uv sync --group dev
+      - run: uv run --no-sync ruff check src tests/test_regressions.py
+      - run: uv run --no-sync pytest -q
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: uv sync --group dev
+      - run: uv build
+      - name: Validate built wheel and isolated installation
+        shell: bash
+        run: |
+          set -euo pipefail
+          uv venv /tmp/autofishing-wheel-check
+          uv pip install --python /tmp/autofishing-wheel-check/bin/python --no-deps dist/*.whl
+          /tmp/autofishing-wheel-check/bin/python - <<'PY'
+          from importlib.metadata import distribution
+          from pathlib import Path
+          import zipfile
+
+          d = distribution("endstone-autofishing")
+          assert d.version == "0.4.0"
+          eps = [ep for ep in d.entry_points if ep.group == "endstone"]
+          assert len(eps) == 1
+          assert eps[0].name == "autofishing"
+          assert eps[0].value == "endstone_autofishing:AutoFishingPlugin"
+          root = Path("dist")
+          wheels = list(root.glob("*.whl"))
+          assert len(wheels) == 1
+          with zipfile.ZipFile(wheels[0]) as wheel:
+              names = set(wheel.namelist())
+              for path in ["endstone_autofishing/__init__.py", "endstone_autofishing/plugin.py", "endstone_autofishing/protocol.py", "endstone_autofishing/config.toml"]:
+                  assert path in names, path
+              assert any(path.endswith("/licenses/LICENSE") for path in names)
+          print("wheel installation, entry point and package contents: OK")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: autofishing-build
+          path: dist/*
+          if-no-files-found: error
