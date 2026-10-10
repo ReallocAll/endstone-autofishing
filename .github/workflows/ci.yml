@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       UV_PYTHON: ${{ matrix.python-version }}
     strategy:
@@ -27,7 +27,7 @@ jobs:
       - run: uv run --no-sync pytest -q
 
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       UV_PYTHON: ${{ matrix.python-version }}
     strategy:
@@ -75,23 +75,3 @@ jobs:
           path: dist/*
           if-no-files-found: error
 
-  annotations-audit:
-    needs: [test, build]
-    if: ${{ always() }}
-    runs-on: ubuntu-latest
-    permissions:
-      checks: read
-    steps:
-      - name: Inspect check-run annotations
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-          TARGET_REPO: ${{ github.repository }}
-          TARGET_SHA: ${{ github.sha }}
-        run: |
-          set -euo pipefail
-          gh api "repos/$TARGET_REPO/commits/$TARGET_SHA/check-runs?per_page=100" --jq '.check_runs[] | select(.output.annotations_count > 0) | [.id, .name, .output.annotations_count] | @tsv' |
-          while IFS=$'\t' read -r check_id check_name annotation_count; do
-            echo "=== $check_name ($annotation_count annotations) ==="
-            gh api "repos/$TARGET_REPO/check-runs/$check_id/annotations?per_page=100" --jq '.[] | [.annotation_level, .path, .message] | @tsv'
-          done
