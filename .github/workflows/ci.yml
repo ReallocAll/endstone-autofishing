@@ -19,6 +19,8 @@ jobs:
     steps:
       - uses: actions/checkout@v7.0.1
       - uses: astral-sh/setup-uv@v10.3.0
+        with:
+          cache-suffix: ${{ github.job }}-py${{ matrix.python-version }}
       - run: uv python install ${{ matrix.python-version }}
       - run: uv sync --group dev
       - run: uv run --no-sync ruff check src tests/test_regressions.py
@@ -35,6 +37,8 @@ jobs:
     steps:
       - uses: actions/checkout@v7.0.1
       - uses: astral-sh/setup-uv@v10.3.0
+        with:
+          cache-suffix: ${{ github.job }}-py${{ matrix.python-version }}
       - run: uv python install ${{ matrix.python-version }}
       - run: uv sync --group dev
       - run: uv build
