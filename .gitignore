@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.venv/
+build/
+dist/
+*.egg-info/
+*.whl
+*.zip
+.coverage
+coverage.xml
+armed_players.json
+config.toml
+!.github/workflows/*.yml
+!src/endstone_autofishing/config.toml
