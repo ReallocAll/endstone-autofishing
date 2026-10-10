@@ -7,18 +7,18 @@ name = "endstone-autofishing"
 version = "0.4.0"
 description = "Event-driven low-overhead automatic fishing for Endstone"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 license = "GPL-3.0-only"
 license-files = ["LICENSE"]
 authors = [{ name = "ReallocAll" }]
 keywords = ["endstone", "minecraft", "bedrock", "fishing"]
 classifiers = [
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
+  "Programming Language :: Python :: 3.15",
 ]
 
 [project.entry-points."endstone"]
@@ -32,7 +32,7 @@ packages = ["src/endstone_autofishing"]
 
 [tool.ruff]
 line-length = 120
-target-version = "py310"
+target-version = "py311"
 include = ["src/**/*.py", "tests/test_regressions.py"]
 
 [tool.ruff.lint]

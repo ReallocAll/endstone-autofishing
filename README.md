@@ -2,7 +2,7 @@
 
 A pure-Python automatic fishing plugin for Minecraft Bedrock Dedicated Server (BDS) through Endstone. It uses event-driven, per-player fishing sessions and avoids scanning world entities or polling every connected player.
 
-**Version:** 0.4.0 · **Python:** 3.10+ · **Endstone API:** 0.11 · **Verified protocol:** BDS 1.26.51.1 (2193). Protocol values for other BDS builds are configurable but not independently verified.
+**Version:** 0.4.0 · **Python:** 3.11–3.15 (code-tested) · **Endstone API:** 0.11 · **Verified protocol:** BDS 1.26.51.1 (2193). Protocol values for other BDS builds are configurable but not independently verified.
 
 ## Features
 
@@ -16,7 +16,7 @@ A pure-Python automatic fishing plugin for Minecraft Bedrock Dedicated Server (B
 
 ## Install
 
-Place the `endstone_autofishing-0.4.0-py3-none-any.whl` distribution in the server's `plugins/` directory and restart Endstone. Do not install the source ZIP in place of a wheel. A supported Endstone installation is required on the server.
+Place the `endstone_autofishing-0.4.0-py3-none-any.whl` distribution in the server's `plugins/` directory and restart Endstone. Do not install the source ZIP in place of a wheel. A supported Endstone installation is required on the server. Python 3.15 also requires an Endstone runtime built for CPython 3.15. Plugin CI passing on Python 3.15 does not by itself verify Endstone/BDS runtime compatibility.
 
 The package registers the `endstone` entry point `autofishing = endstone_autofishing:AutoFishingPlugin`.
 
